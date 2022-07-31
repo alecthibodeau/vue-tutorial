@@ -1,14 +1,32 @@
 <script setup lang="ts">
-import { onMounted, ref, type Ref } from 'vue';
+import { ref, watch } from 'vue';
 
-const paragraph: Ref = ref(null);
+const count = ref(0);
+const todoId = ref(1);
+const todoData = ref(null);
 
- onMounted(() => {
-  // component is now mounted.
-  paragraph.value.textContent = "text on mount";
+watch(count, (newCount) => {
+  // yes, console.log() is a side effect
+  console.log(`new count is: ${newCount}`);
 });
+
+watch(todoId, fetchData);
+
+async function fetchData() {
+  todoData.value = null
+  const res = await fetch(
+    `https://jsonplaceholder.typicode.com/todos/${todoId.value}`
+  )
+  todoData.value = await res.json()
+}
+
+fetchData();
 </script>
 
 <template>
-  <p ref="paragraph">hello</p>
+  <button @click="count += 1">Count</button>
+  <p>Todo id: {{ todoId }}</p>
+  <button @click="todoId += 1">Fetch next todo</button>
+  <p v-if="!todoData">Loading...</p>
+  <pre v-else>{{ todoData }}</pre>
 </template>
